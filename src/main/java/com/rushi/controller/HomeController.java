@@ -23,7 +23,7 @@ public class HomeController {
     public static List<RegistrationForm> REGISTRATIONS = new ArrayList<>();
 
     public static class RegistrationForm implements Serializable {
-        @NotEmpty(message = "Name is required")
+        @NotEmpty(message = "Name is required.")
         private String name;
 
         @NotEmpty(message = "Email is required")
