@@ -28,7 +28,7 @@
 		</repository>
 		<snapshotRepository>
 			<id>nexus</id>
-			<url>http://172.31.32.198:8081/repository/Student-Project-Snapshot/</url>
+			<url>http://172.31.32.198 :8081/repository/Student-Project-Snapshot/</url>
 		</snapshotRepository>
     </distributionManagement>
 
