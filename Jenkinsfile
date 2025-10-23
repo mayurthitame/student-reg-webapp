@@ -39,6 +39,7 @@ node{
         // ---- Notification Section ----
         
         def buildStatus = currentBuild.result ?: 'SUCCESS'
+        slackSend channel: 'student-webapp', message: "Jenkins Build: ${buildStatus} - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
         def color = (buildStatus == 'SUCCESS') ? 'green' : 'red'
         def emoji = (buildStatus == 'SUCCESS') ? '✅' : '❌'
         def message = (buildStatus == 'SUCCESS') ?
