@@ -5,6 +5,14 @@ node{
     def tomcatIp='51.20.185.220'
     def tomcatUser='ec2-user'
     try{
+        stage('Checkout') {
+            checkout([$class: 'GitSCM',
+                branches: [[name: '*/main']],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[$class: 'CleanBeforeCheckout']],   // ✅ this ensures old code is deleted
+                userRemoteConfigs: [[url: 'https://github.com/mayurthitame/student-reg-webapp.git']]
+            ])
+}
 
         stage("Maven build")
         {
