@@ -6,8 +6,8 @@ node{
     def tomcatUser='ec2-user'
     try{
         stage('Checkout') {
-            checkout([$class: 'GitSCM',
-                  branches: [[name: '*/main']],
+            checkout([$class: 'GitSCM',  
+                branches: [[name: '*/main']],
                 extensions: [
                     [$class: 'WipeWorkspace'],
                     [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, timeout: 10]
