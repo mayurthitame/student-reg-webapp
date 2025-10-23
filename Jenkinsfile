@@ -7,12 +7,14 @@ node{
     try{
         stage('Checkout') {
             checkout([$class: 'GitSCM',
-                branches: [[name: '*/main']],
-                doGenerateSubmoduleConfigurations: false,
-                extensions: [[$class: 'CleanBeforeCheckout']],   // ✅ this ensures old code is deleted
+                  branches: [[name: '*/main']],
+                extensions: [
+                    [$class: 'WipeWorkspace'],
+                    [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, timeout: 10]
+                ], 
                 userRemoteConfigs: [[url: 'https://github.com/mayurthitame/student-reg-webapp.git']]
             ])
-}
+        }
 
         stage("Maven build")
         {
