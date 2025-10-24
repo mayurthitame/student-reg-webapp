@@ -1,80 +1,31 @@
-properties([pipelineTriggers([githubPush()])])
+pipeline {  
+    agent any
 
-node{
-    def mavenHome = tool name:'Maven-3.9.11' ,type: 'maven'
-    def tomcatIp='51.20.185.220'
-    def tomcatUser='ec2-user'
-    try{
-        stage('Checkout') {
-            checkout([$class: 'GitSCM',  
-                branches: [[name: '*/main']],
-                extensions: [
-                    [$class: 'WipeWorkspace'],
-                    [$class: 'CloneOption', noTags: false, shallow: false, depth: 0, timeout: 10]
-                ], 
-                userRemoteConfigs: [[url: 'https://github.com/mayurthitame/student-reg-webapp.git']]
-            ])
-        }
-
-        stage("Maven build")
-        {
-            sh "${mavenHome}/bin/mvn clean package"
-        }
-        stage("Sonar")
-        {
-            withCredentials([string(credentialsId: 'sonarToken', variable: 'sonarTokenvariable')]) {
-                sh "${mavenHome}/bin/mvn verify sonar:sonar -Dsonar.token=${sonarTokenvariable}"
-            }
-        }
-         stage("Upload war file to Nexus")
-        {
-             sh "${mavenHome}/bin/mvn package deploy"
-        }
-        stage("Upload war file to Tomcat")
-        {
-            sshagent(['TomcatServer_SSH_Credentials']) {
-              sh "ssh -o StrictHostKeyChecking=no ${tomcatUser}@${tomcatIp} sudo systemctl stop tomcat"
-              sh "sleep 20"
-              sh "ssh -o StrictHostKeyChecking=no ${tomcatUser}@${tomcatIp} rm /opt/tomcat/webapps/student-reg-webapp.war"
-              sh "scp -o StrictHostKeyChecking=no target/student-reg-webapp.war ${tomcatUser}@${tomcatIp}:/opt/tomcat/webapps/student-reg-webapp.war"
-              sh "ssh -o StrictHostKeyChecking=no ${tomcatUser}@${tomcatIp} sudo systemctl start tomcat"
-            }
-        }
-    }catch(err)
-    {
-        currentBuild.result='FAILURE'
-        throw err
+    environment {
+        TOMCAT_IP= '13.60.65.217'
+        SONAR_TOKEN = credentials('sonarToken')
+        SONAR_URL ='http://172.31.33.201:9000/'
     }
-    finally {
-        // ---- Notification Section ----
-        
-        def buildStatus = currentBuild.result ?: 'SUCCESS'
+    tools {
+         maven 'Maven-3.9.11'
+        }
 
-        slackSend channel: 'student-webapp', message: "Jenkins Build: ${buildStatus} - ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-        def color = (buildStatus == 'SUCCESS') ? 'green' : 'red'
-        def emoji = (buildStatus == 'SUCCESS') ? '✅' : '❌'
-        def message = (buildStatus == 'SUCCESS') ?
-            "${emoji} Build *SUCCESSFUL* for job: ${env.JOB_NAME} #${env.BUILD_NUMBER}" :
-            "${emoji} Build *FAILED* for job: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
 
-        def emailBody = """
-            <html>
-                <body style="font-family:Arial, sans-serif; color:#333;">
-                    <h2 style="color:${color};">${emoji} ${buildStatus}</h2>
-                    <p><b>Project:</b> ${env.JOB_NAME}</p>
-                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
-                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                    <hr>
-                    <p>${message}</p>
-                </body>
-            </html>
-        """
-
-        emailext(
-            subject: "Jenkins Build: ${buildStatus} - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: emailBody,
-            mimeType: 'text/html',
-            to: 'mayurthitame@gmail.com'
-        )
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Sonar Scan') {
+            steps {
+                sh 'mvn clean verify sonar:sonar -Dsonar.token=${SONAR_TOKEN} -Dsonar.host.url=${SONAR_URL}'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying...'
+            }
+        }
     }
 }
