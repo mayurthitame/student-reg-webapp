@@ -1,6 +1,10 @@
 pipeline {  
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         TOMCAT_IP= '13.60.65.217'
         SONAR_TOKEN = credentials('sonarToken')
@@ -22,9 +26,20 @@ pipeline {
                 sh 'mvn clean verify sonar:sonar -Dsonar.token=${SONAR_TOKEN} -Dsonar.host.url=${SONAR_URL}'
             }
         }
-        stage('Deploy') {
+        stage('Upload to Nexus') {
             steps {
-                echo 'Deploying...'
+                sh 'mvn clean deploy'
+            }
+        }
+        stage('Deploy to Tomcat') {
+            steps {
+              sshagent(['TomcatServer_SSH_Credentials']) {
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${TOMCAT_IP} sudo systemctl stop tomcat"
+                    sh "sleep 20"
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${TOMCAT_IP} rm /opt/tomcat/webapps/student-reg-webapp.war"
+                    sh "scp -o StrictHostKeyChecking=no target/student-reg-webapp.war ec2-user@${TOMCAT_IP}:/opt/tomcat/webapps/student-reg-webapp.war"
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${TOMCAT_IP} sudo systemctl start tomcat"  
+                }
             }
         }
     }
