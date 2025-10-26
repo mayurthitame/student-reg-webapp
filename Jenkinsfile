@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        TOMCAT_IP= '13.60.65.217'
+        TOMCAT_IP= '172.31.44.101'
         SONAR_TOKEN = credentials('sonarToken')
         SONAR_URL ='http://172.31.33.201:9000/'
     }
