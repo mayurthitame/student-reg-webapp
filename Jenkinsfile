@@ -45,13 +45,21 @@ pipeline {
     }
     post {
         always {
-            echo 'This will always run after the stages finish'
+            cleanWs()
         }
         success {
-            echo 'This will run only if the pipeline succeeds'
+        slackSend (channel: '#student-webapp', color: "good", message: "Build - SUCCESS : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
+          sendEmail(
+           "${env.JOB_NAME} - ${env.BUILD_NUMBER} - Build SUCCESS",
+           "Build SUCCESS. Please check the console output at ${env.BUILD_URL}",
+           'mayurthitame@gmail.com' )
         }
         failure {
-            echo 'This will run only if the pipeline fails'
+         slackSend (channel: '#student-webapp', color: "danger", message: "Build - FAILED : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
+         sendEmail(
+           "${env.JOB_NAME} - ${env.BUILD_NUMBER} - Build FAILED",
+           "Build FAILED. Please check the console output at ${env.BUILD_URL}",
+           'mayurthitame@gmail.com' )
         }
     }
 }
