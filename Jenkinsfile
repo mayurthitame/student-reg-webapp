@@ -48,14 +48,14 @@ pipeline {
             cleanWs()
         }
         success {
-        slackSend (channel: '#student-webapp', color: "good", message: "Build - SUCCESS : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
+        slackSend (channel: 'student-webapp', color: "good", message: "Build - SUCCESS : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
           sendEmail(
            "${env.JOB_NAME} - ${env.BUILD_NUMBER} - Build SUCCESS",
            "Build SUCCESS. Please check the console output at ${env.BUILD_URL}",
            'mayurthitame@gmail.com' )
         }
         failure {
-         slackSend (channel: '#student-webapp', color: "danger", message: "Build - FAILED : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
+         slackSend (channel: 'student-webapp', color: "danger", message: "Build - FAILED : ${env.JOB_NAME} #${env.BUILD_NUMBER} - URL: ${env.BUILD_URL}")
          sendEmail(
            "${env.JOB_NAME} - ${env.BUILD_NUMBER} - Build FAILED",
            "Build FAILED. Please check the console output at ${env.BUILD_URL}",
