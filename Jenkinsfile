@@ -31,6 +31,28 @@ pipeline {
                 sh 'mvn clean deploy'
             }
         }
+        stage('deploy war file to qa server')
+        {
+            when {
+               expression { return env.BRANCH_NAME == 'development' }
+            }
+            steps {
+                sshagent(['TomcatServer_SSH_Credentials']) {
+                    echo "deploying to QA server"
+                }
+            }
+        }
+        stage('deploy war file to Prod server')
+        {
+            when {
+               expression { return env.BRANCH_NAME == 'main' }
+            }
+            steps {
+                sshagent(['TomcatServer_SSH_Credentials']) {
+                    echo "deploying to Prod server"
+                }
+            }
+        }
         stage('Deploy to Tomcat') {
             steps {
               sshagent(['TomcatServer_SSH_Credentials']) {
