@@ -54,6 +54,13 @@ pipeline {
                 }
             }
         }
+         stage("triggering selenium tests")
+        {
+            steps {
+                build job: 'student-reg-webapp-testing', wait: true
+            }
+        }
+
         stage('Deploy to Tomcat') {
             steps {
               sshagent(['TomcatServer_SSH_Credentials']) {
@@ -65,6 +72,7 @@ pipeline {
                 }
             }
         }
+       
     }
      post {
         always {
