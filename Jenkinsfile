@@ -58,7 +58,6 @@ pipeline {
         {
             steps {
                 build job: 'student-reg-webapp-testing', wait: true
-                // Add any additional steps needed after the test job completes
                 echo "Selenium tests completed"
             }
         }
