@@ -1,0 +1,40 @@
+FROM alpine:3.19
+
+# Install Java and required utilities
+RUN apk add --no-cache \
+    openjdk17-jdk \
+    wget \
+    tar \
+    bash
+
+# Create non-root user
+RUN addgroup -S tomcat && adduser -S tomcat -G tomcat
+
+# Java environment
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
+# Tomcat version
+ENV TOMCAT_VERSION=9.0.82
+
+# Download and install Tomcat
+RUN wget -O /tmp/tomcat.tar.gz \
+      https://archive.apache.org/dist/tomcat/tomcat-9/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz && \
+    tar -xzf /tmp/tomcat.tar.gz -C /usr/local && \
+    mv /usr/local/apache-tomcat-${TOMCAT_VERSION} /usr/local/tomcat && \
+    rm /tmp/tomcat.tar.gz && \
+    rm -rf /usr/local/tomcat/webapps/*
+
+# Set permissions
+RUN chown -R tomcat:tomcat /usr/local/tomcat
+
+# Switch to non-root user
+USER tomcat
+
+# Tomcat environment
+ENV CATALINA_HOME=/usr/local/tomcat
+WORKDIR $CATALINA_HOME
+
+EXPOSE 8080
+
+CMD ["bin/catalina.sh", "run"]
